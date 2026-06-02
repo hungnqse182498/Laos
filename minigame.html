@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lào Mini Game - Âm Thanh Bất Tử</title>
+    <style>
+        :root {
+            --lao-red: #CE1126;
+            --lao-blue: #005CB9;
+            --lao-gold: #D4AF37;
+            --lao-dark-gold: #AA8417;
+            --lao-cream: #F5EEDA;
+        }
+
+        /* --- BACKGROUND SLIDESHOW --- */
+        #bg-slideshow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1.5s ease-in-out;
+        }
+
+        #bg-slideshow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.45);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            background: transparent;
+            overflow-x: hidden;
+        }
+
+        /* --- KHUNG TIÊU ĐỀ --- */
+        .header-container {
+            border: 6px double var(--lao-gold);
+            padding: 25px 80px;
+            background: linear-gradient(to bottom, #ffffff, #fcfaf2);
+            border-radius: 20px;
+            margin-bottom: 50px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--lao-blue);
+            text-shadow: 2px 2px 0px var(--lao-gold);
+            font-size: 4rem;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        /* --- LƯỚI Ô SỐ KHỔNG LỒ --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 35px;
+            width: 100%;
+            max-width: 1200px;
+            justify-content: center;
+            justify-items: center;
+        }
+
+        /* ĐÃ ĐỔI: Màu ô mặc định thuần Xanh Dương để không bị lẫn lộn với màu Đỏ khi sai */
+        .number-card {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 200px;
+            background: linear-gradient(135deg, var(--lao-blue), #00458C);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5.5rem;
+            font-weight: bold;
+            border: 6px solid var(--lao-gold);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.4);
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .number-card::after {
+            content: '🌼';
+            position: absolute;
+            font-size: 1.4rem;
+            bottom: 10px;
+            right: 10px;
+            opacity: 0.7;
+        }
+
+        .number-card:hover {
+            transform: translateY(-12px) scale(1.06);
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6);
+            border-color: #fff;
+        }
+
+        /* Khi người chơi chọn ĐÚNG: Xanh lá cây */
+        .number-card.won {
+            background: linear-gradient(135deg, #1e7e34, #28a745);
+            border-color: var(--lao-gold);
+        }
+
+        /* Khi người chơi chọn SAI: Đỏ rực rỡ tương phản cực cao với xanh dương mặc định */
+        .number-card.lost {
+            background: linear-gradient(135deg, #bd2130, #dc3545);
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.8);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 1000px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 700px;
+                gap: 25px;
+            }
+
+            h1 {
+                font-size: 2.8rem;
+            }
+
+            .header-container {
+                padding: 20px 40px;
+            }
+
+            .number-card {
+                font-size: 4.5rem;
+                max-width: 160px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 360px;
+                gap: 20px;
+            }
+
+            h1 {
+                font-size: 2 stream;
+            }
+
+            .header-container {
+                padding: 15px 25px;
+                margin-bottom: 35px;
+            }
+
+            .number-card {
+                font-size: 3.8rem;
+                max-width: 140px;
+                border-width: 4px;
+            }
+        }
+
+        /* --- OVERLAY MỜ NỀN --- */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background 0.3s ease;
+        }
+
+        #overlay.wrong-answer {
+            background: rgba(150, 0, 0, 0.85);
+        }
+
+        .shake {
+            animation: shakeAnim 0.5s linear;
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        /* --- KHUNG CÂU HỎI & KẾT QUẢ --- */
+        .modal {
+            background-color: #fdfbf7;
+            width: 100%;
+            max-width: 1200px;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(212, 175, 55, 0.1);
+            position: relative;
+            box-sizing: border-box;
+            border: 6px solid var(--lao-blue);
+            outline: 4px solid var(--lao-gold);
+            outline-offset: -20px;
+            animation: modalFadeIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal::before,
+        .modal::after,
+        .question-area-deco::before,
+        .question-area-deco::after {
+            content: '🌼';
+            position: absolute;
+            color: var(--lao-gold);
+            font-size: 1.2rem;
+            z-index: 5;
+        }
+
+        .modal::before { top: 28px; left: 28px; }
+        .modal::after { top: 28px; right: 28px; }
+        .question-area-deco::before { bottom: 28px; left: 28px; }
+        .question-area-deco::after { bottom: 28px; right: 28px; }
+
+        #question-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .question-box {
+            background: linear-gradient(135deg, var(--lao-blue), #001840);
+            border: 3px solid var(--lao-gold);
+            border-radius: 12px;
+            padding: 40px 30px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        #question-text {
+            font-size: 2.8rem;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- NÚT BẤM ĐÁP ÁN 3D --- */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+        }
+
+        @media (max-width: 550px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            #question-text { font-size: 1.8rem; }
+            .option-btn { font-size: 1.3rem; }
+            .win-title, .lose-title { font-size: 2.5rem; }
+            .gift-box { font-size: 4rem; }
+            .close-btn { font-size: 1.1rem; }
+            .modal { max-width: 95%; padding: 40px 20px; }
+            .question-box { padding: 25px 15px; }
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 25px 20px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+            box-sizing: border-box;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            background: linear-gradient(to bottom, #ffffff, #f1f1f1);
+            border: 2px solid #dcdcdc;
+            border-radius: 15px;
+            box-shadow: 0 7px 0 #c5c5c5, 0 10px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.1s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #fffdf7, #fcf4dd);
+            border-color: var(--lao-gold);
+            color: var(--lao-blue);
+            box-shadow: 0 7px 0 var(--lao-dark-gold), 0 10px 15px rgba(212, 175, 55, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .option-btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 var(--lao-dark-gold), 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- HIỆU ỨNG TEXT THẮNG/THUA --- */
+        #result-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .win-title {
+            color: #28a745;
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(40, 167, 69, 0.6);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .lose-title {
+            color: var(--lao-red);
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #win-area, #lose-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gift-container {
+            display: flex;
+            gap: 30px;
+            margin: 40px 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .gift-box {
+            font-size: 6rem;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.15));
+        }
+
+        .gift-box:hover {
+            transform: scale(1.3) rotate(8deg);
+        }
+
+        #meme-video {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+            border: 4px solid var(--lao-red);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .close-btn {
+            margin-top: 50px;
+            padding: 18px 60px;
+            background: linear-gradient(to bottom, #444, #222);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 6px 0 #111, 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.1s;
+        }
+
+        .close-btn:hover { background: #000; }
+        .close-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #000; }
+
+        /* --- PHÁO HOA CANVAS --- */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        /* ĐÃ SỬA: Thay đổi background nền sang gradient xanh lam Cobalt đồng bộ, phóng to khung login */
+        #login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #CE1126, #005CB9); /* Đồng bộ màu xanh lam mới */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        /* ĐÃ SỬA: Tăng kích thước tối đa (max-width) và padding để khung login to, rộng rãi hơn */
+        .login-box {
+            background: #ffffff;
+            padding: 50px 45px; /* Tăng khoảng cách đệm bên trong */
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 5px solid #D4AF37;
+            width: 90%;
+            max-width: 480px; /* Tăng độ rộng từ 360px lên 480px giúp khung to rõ ràng */
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .login-box h2 {
+            color: #005CB9; /* Thay đổi tiêu đề chữ sang màu xanh lam mới */
+            margin-top: 0;
+            margin-bottom: 35px;
+            font-size: 2rem;
+            font-family: sans-serif;
+            text-shadow: 1px 1px 0px #D4AF37;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px; /* Làm ô nhập liệu cao và dễ bấm hơn */
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #005CB9; /* Hiệu ứng focus đồng bộ màu xanh mới */
+        }
+
+        #login-btn {
+            width: 100%;
+            padding: 16px;
+            background: #CE1126;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #9d0d1d;
+        }
+
+        #login-btn:hover {
+            background: #b00f20;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #9d0d1d;
+        }
+        
+        #login-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #9d0d1d;
+        }
+
+        #login-error {
+            color: #CE1126;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            display: none;
+            font-family: sans-serif;
+        }
+    </style>
+
+    <div id="login-container">
+        <div class="login-box">
+            <h2>🔒 ĐĂNG NHẬP</h2>
+            <div class="input-group">
+                <label>Tài khoản:</label>
+                <input type="text" id="username" placeholder="Nhập tài khoản...">
+            </div>
+            <div class="input-group">
+                <label>Mật khẩu:</label>
+                <input type="password" id="password" placeholder="Nhập mật khẩu...">
+            </div>
+            <button id="login-btn" onclick="handleLogin()">VÀO TRÒ CHƠI</button>
+            <p id="login-error">Sai tài khoản hoặc mật khẩu! ❌</p>
+        </div>
+    </div>
+    <div id="bg-slideshow"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="header-container">
+        <h1>🌼 OPEN THE BOX 🐘</h1>
+    </div>
+
+    <div class="grid-container" id="grid"></div>
+
+    <div id="overlay">
+        <div class="modal question-area-deco" id="modal-content">
+
+            <div id="question-area">
+                <div class="question-box">
+                    <p id="question-text">Đang tải câu hỏi...</p>
+                </div>
+                <div class="options-grid" id="options"></div>
+            </div>
+
+            <div id="result-screen">
+                <div id="result-text"></div>
+
+                <div id="win-area" style="display:none;">
+                    <p style="font-size:1.6rem; margin: 15px 0 0 0; color: #555; font-weight: 600;">🎁 Chọn 1 hộp quà may mắn của bạn:</p>
+                    <div class="gift-container" id="gift-pool"></div>
+                    
+                    <div id="gift-name" style="display:none;"></div>
+                    
+                    <img id="gift-img-display" src="" alt="Ảnh Quà" style="display:none; max-width:450px; width:100%; margin-top:25px; border-radius:15px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); border: 5px solid var(--lao-gold);">
+                </div>
+
+                <div id="lose-area" style="display:none; width: 100%; justify-content: center;">
+                    <img id="meme-video" src="" alt="Meme Thua" 
+                         style="margin-top: 20px; 
+                                width: 100%; 
+                                max-width: 400px; 
+                                aspect-ratio: 1 / 1; /* Cố định khung hình vuông tuyệt đối */
+                                object-fit: cover;   /* Giúp ảnh GIF tự lấp đầy khung mà không bị móp hay méo hình */
+                                border-radius: 20px; 
+                                border: 5px solid var(--lao-red); 
+                                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);">
+                </div>
+
+                <button class="close-btn" onclick="closeOverlay()">ĐÓNG & TIẾP TỤC</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 1. KHỞI TẠO HỆ THỐNG ÂM THANH TOÀN CỤC ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let currentAudio = null; // Biến dùng để kiểm soát và ngắt nhạc lập tức khi đóng bảng
+
+        // Danh sách 5 Sound thắng ngẫu nhiên (không chứa meme)
+        const winSounds = [
+            "images/win1.mp3",
+            "images/win2.mp3",
+            "images/win3.mp3"
+        ];
+
+        // Cặp đôi meme thua đồng bộ tuyệt đối (GIF nào đi kèm Sound đó)
+        const memeCombo = [
+            { gif: "images/gif1.gif", sound: "images/lose1.mp3" },
+            { gif: "images/gif2.gif", sound: "images/lose2.mp3" },
+            { gif: "images/gif3.gif", sound: "images/lose3.mp3" },
+            { gif: "images/gif4.gif", sound: "images/lose4.mp3" },
+            { gif: "images/gif5.gif", sound: "images/lose5.mp3" },
+            { gif: "images/gif6.gif", sound: "images/lose6.mp3" }
+        ];
+
+        // Hàm phát nhạc thắng ngẫu nhiên
+        function playWinSound() {
+            try {
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                stopAnyPlayingAudio(); // Tắt âm thanh cũ nếu có trước khi phát bài mới
+
+                const randomWinUrl = winSounds[Math.floor(Math.random() * winSounds.length)];
+                currentAudio = new Audio(randomWinUrl);
+                currentAudio.volume = 0.6;
+                currentAudio.load();
+                currentAudio.play().catch(e => console.log("Chờ tương tác để phát nhạc: ", e));
+            } catch (e) { console.log(e); }
+        }
+
+        // Hàm phát nhạc thua đồng bộ theo bộ đôi combo tương ứng
+        function playLoseSound(soundPath) {
+            try {
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+                stopAnyPlayingAudio(); // Tắt âm thanh cũ nếu có trước khi phát bài mới
+
+                if (!soundPath) return;
+                currentAudio = new Audio(soundPath);
+                currentAudio.volume = 0.6;
+                currentAudio.load();
+                currentAudio.play().catch(e => console.log("Chờ tương tác để phát nhạc: ", e));
+            } catch (e) { console.log(e); }
+        }
+
+        // Hàm bổ trợ dùng để dập tắt âm thanh ngay lập tức
+        function stopAnyPlayingAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+        }
+
+        // Giữ lại hàm tạo sóng âm cũ phòng trường hợp các logic cũ gọi tới
+        function playTone(freq, type, duration, delay) {
+            setTimeout(() => {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = type;
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) { console.log(e); }
+            }, delay * 1000);
+        }
+
+        // --- 2. DANH SÁCH ẢNH NỀN SLIDESHOW ---
+        const bgImages = [
+            "images/bg1.jpg",
+            "images/bg3.jpg",
+            "images/bg2.webp",
+            "images/bg4.jpg",
+            "images/bg5.jpg",
+        ];
+        let currentBgIndex = 0;
+        const bgElement = document.getElementById('bg-slideshow');
+        function changeBackground() {
+            bgElement.style.backgroundImage = `url('${bgImages[currentBgIndex]}')`;
+            currentBgIndex = (currentBgIndex + 1) % bgImages.length;
+        }
+        changeBackground();
+        setInterval(changeBackground, 6000);
+
+        // --- 3. DỮ LIỆU CÂU HỎI ---
+        const questions = [
+            { 
+                q: "Tôn giáo nào giữ vai trò chủ lưu, chiếm đa số trong cư dân và ảnh hưởng sâu sắc nhất đến đời sống văn hóa, giáo dục của Lào?", 
+                a: ["Phật giáo Đại thừa (Mahayana)", "Phật giáo Nam tông (Theravada)", "Công giáo Rôma", "Hồi giáo"], 
+                correct: 1, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Trên quốc kỳ Lào, dải màu xanh lam ở giữa mang ý nghĩa biểu tượng gì?", 
+                a: ["Máu của các anh hùng liệt sĩ đã hy sinh vì nền độc lập.", "Sự giàu có về tài nguyên và hy vọng về một tương lai thịnh vượng.", "Sự thuần khiết, thống nhất và công bằng của đất nước.", "Vầng trăng sáng soi bóng hiền hòa trên dòng sông Mê Kông."], 
+                correct: 1, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Vương quốc cổ nào được coi là nguồn gốc lịch sử và văn hóa đầu tiên của đất nước Lào?", 
+                a: ["Vương quốc Chăm Pa", "Vương quốc Lan Xang", "Vương quốc Phù Nam", "Vương quốc Ayutthaya"], 
+                correct: 1, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Dân cư nước Lào được chia thành 3 nhóm chính dựa trên đặc điểm nào?", 
+                a: ["Địa hình vùng miền cư trú (Đồng bằng, trung du, núi cao)", "Trình độ học vấn và phân hóa giàu nghèo", "Tôn giáo và hệ thống tín ngưỡng dân gian", "Các ngành nghề kinh tế thủ công truyền thống"], 
+                correct: 0, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Cử chỉ chào truyền thống “nop” của người Lào được thực hiện như thế nào?", 
+                a: ["Đặt tay phải lên ngực trái và cúi đầu sâu.", "Bắt tay bằng cả hai tay và mỉm cười thật tươi.", "Chắp hai lòng bàn tay lại trước ngực và cúi đầu.", "Ôm nhẹ vào vai đối phương để thể hiện sự thân thiện."], 
+                correct: 2, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Loại lương thực nào được coi là “trung tâm của bữa ăn” và là “linh hồn” trong ẩm thực hàng ngày của người Lào?", 
+                a: ["Cơm gạo tẻ", "Bánh mì kiểu Pháp", "Xôi nếp (Khao Niew)", "Các loại mì sợi"], 
+                correct: 2, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Món ăn nào sau đây được mệnh danh là “quốc thực” của Lào, mang ý nghĩa may mắn và thường được làm để tặng nhau dịp Tết?", 
+                a: ["Tam Mak Hoong (Gỏi đu đủ)", "Mok Pa (Cá hấp lá chuối)", "Sai Oua (Xúc xích kiểu Lào)", "Laap (Salad thịt băm/gỏi thịt)"], 
+                correct: 3, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Biệt danh kinh tế chiến lược nào sau đây được quốc tế dành cho nước Lào nhờ lợi thế phát triển năng lượng vượt trội?", 
+                a: ["Công xưởng sản xuất của Đông Nam Á", "Bình ắc-quy của Đông Nam Á", "Trung tâm tài chính của khu vực Mekong", "Đảo quốc du lịch sinh thái"], 
+                correct: 1, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Điệu múa dân gian mang tính cộng đồng cao, mọi người cùng xếp thành vòng tròn bước đều nhịp nhàng và được coi là 'quốc vũ' của Lào là điệu múa nào?", 
+                a: ["Múa Khon (Vũ kịch mặt nạ)", "Múa Cung đình (Fon Luang)", "Lăm Vông (Lam Vong)", "Múa Baci cầu an"], 
+                correct: 2, 
+                status: "unanswered" 
+            },
+            { 
+                q: "Công trình kiến trúc Phật giáo vĩ đại nào cao 45 mét, toàn bộ được dát vàng, nằm tại thủ đô Vientiane và là biểu tượng tối cao cho chủ quyền, lòng tự hào dân tộc Lào?", 
+                a: ["Chùa Wat Xieng Thong", "Khải Hoàn Môn Patuxai", "Tháp Pha That Luang (That Luang)", "Cánh đồng Chum cổ kính"], 
+                correct: 2, 
+                status: "unanswered" 
+            }
+        ];
+
+        // --- 4. DANH SÁCH HỘP QUÀ ---
+        const globalGifts = [
+            { name: "Gói Bánh Quy 🍪", img: "images/gift1.jpg", opened: false },
+            { name: "Kẹo Mút 🍭", img: "images/gift2.jpg", opened: false },
+            { name: "Bịch Snack 🍟", img: "images/gift3.jpg", opened: false },
+            { name: "Sô-cô-la 🍫", img: "images/gift4.jpg", opened: false },
+            { name: "Trà Sữa 🧋", img: "images/gift5.jpg", opened: false }
+        ];
+
+        let currentQuestionIndex = 0;
+        const grid = document.getElementById('grid');
+        const overlay = document.getElementById('overlay');
+        const modalContent = document.getElementById('modal-content');
+
+        // Tạo lưới 10 ô số ban đầu
+        for (let i = 0; i < 10; i++) {
+            const card = document.createElement('div');
+            card.className = 'number-card';
+            card.innerText = i + 1;
+            card.onclick = () => openQuestion(i, card);
+            grid.appendChild(card);
+        }
+
+        // Hàm mở câu hỏi
+        function openQuestion(index, card) {
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+
+            currentQuestionIndex = index;
+            const currentQuestion = questions[index];
+
+            document.getElementById('question-area').style.display = 'flex';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('question-text').innerText = currentQuestion.q;
+
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+
+            if (currentQuestion.status === "won") {
+                currentQuestion.a.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    btn.disabled = true;
+                    if (i === currentQuestion.correct) {
+                        btn.style.background = '#28a745';
+                        btn.style.color = 'white';
+                        btn.style.borderColor = '#28a745';
+                    }
+                    optionsDiv.appendChild(btn);
+                });
+
+                const backBtn = document.createElement('button');
+                backBtn.className = 'close-btn';
+                backBtn.style.gridColumn = '1 / -1';
+                backBtn.style.marginTop = '15px';
+                backBtn.innerText = '🔙 TRỞ LẠI MÀN HÌNH';
+                backBtn.onclick = closeOverlay;
+                optionsDiv.appendChild(backBtn);
+
+            } else {
+                currentQuestion.a.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(i);
+                    optionsDiv.appendChild(btn);
+                });
+            }
+
+            overlay.style.display = 'flex';
+        }
+
+        // Kiểm tra kết quả câu trả lời
+        function checkAnswer(choice) {
+            document.getElementById('question-area').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'flex';
+            
+            const resText = document.getElementById('result-text');
+            const winArea = document.getElementById('win-area');
+            const loseArea = document.getElementById('lose-area');
+            const giftName = document.getElementById('gift-name');
+            const giftImgDisplay = document.getElementById('gift-img-display');
+
+            winArea.style.display = 'none';
+            loseArea.style.display = 'none';
+            giftName.innerText = '';
+            giftImgDisplay.style.display = 'none';
+
+            overlay.classList.remove('wrong-answer');
+            modalContent.classList.remove('shake');
+
+            const currentQuestion = questions[currentQuestionIndex];
+            const cards = document.querySelectorAll('.number-card');
+            const currentCard = cards[currentQuestionIndex];
+
+            if (choice === currentQuestion.correct) {
+                currentQuestion.status = "won";
+                currentCard.className = 'number-card won';
+
+                resText.innerHTML = '<span class="win-title">CHÍNH XÁC! 😍</span>';
+                winArea.style.display = 'flex';
+                
+                renderGiftPool(); 
+                playWinSound(); // Kích hoạt chuỗi sound thắng ngẫu nhiên
+                startConfetti();
+            } else {
+                currentQuestion.status = "lost";
+                currentCard.className = 'number-card lost';
+
+                resText.innerHTML = '<span class="lose-title">SAI RỒI! 🤡</span>';
+                loseArea.style.display = 'flex';
+
+                overlay.classList.add('wrong-answer');
+                modalContent.classList.add('shake');
+
+                // BỐC NGẪU NHIÊN 1 TRONG 5 COMBO THUA ĐỒNG BỘ
+                const randomIndex = Math.floor(Math.random() * memeCombo.length);
+                const chosenCombo = memeCombo[randomIndex];
+
+                // Hiển thị GIF đồng bộ
+                document.getElementById('meme-video').src = chosenCombo.gif;
+                
+                // ĐÃ SỬA: Phát nhạc riêng chính xác đi kèm theo GIF đó
+                playLoseSound(chosenCombo.sound); 
+            }
+        }
+
+        function renderGiftPool() {
+            const giftPool = document.getElementById('gift-pool');
+            giftPool.innerHTML = '';
+
+            globalGifts.forEach((gift, idx) => {
+                if (!gift.opened) {
+                    const box = document.createElement('div');
+                    box.className = 'gift-box';
+                    box.innerText = '🎁';
+                    box.onclick = () => openGiftBox(box, idx);
+                    giftPool.appendChild(box);
+                }
+            });
+        }
+
+        function openGiftBox(element, idx) {
+            globalGifts[idx].opened = true; 
+            document.getElementById('gift-name').style.display = 'none';
+            
+            const imgDisplay = document.getElementById('gift-img-display');
+            imgDisplay.src = globalGifts[idx].img;
+            imgDisplay.style.display = 'block';
+
+            document.querySelectorAll('.gift-box').forEach(b => {
+                b.style.pointerEvents = 'none';
+                if (b !== element) b.style.opacity = '0.2';
+            });
+
+            startConfetti();
+        }
+
+        // ĐÃ SỬA: Khi tắt giao diện kết quả, dập tắt nhạc lập tức
+        function closeOverlay() {
+            overlay.style.display = 'none';
+            overlay.classList.remove('wrong-answer');
+            modalContent.classList.remove('shake');
+            document.getElementById('meme-video').src = "";
+            
+            stopAnyPlayingAudio(); // NGẮT ÂM THANH NGAY LẬP TỨC TẠI ĐÂY
+            stopConfetti();
+        }
+
+        // --- 5. LOGIC PHÁO HOA ---
+        const canvas = document.getElementById("confetti-canvas");
+        const ctx = canvas.getContext("2d");
+        let confettiInterval;
+        let particles = [];
+        const colors = ["#CE1126", "#002868", "#D4AF37", "#28a745", "#FF5733", "#9B59B6"];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resizeCanvas);
+
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * canvas.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            };
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, idx) => {
+                p.tiltAngle += p.tiltAngleIncremental;
+                p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                p.x += Math.sin(p.tiltAngle);
+                p.tilt = Math.sin(p.tiltAngle - idx / 3) * 15;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                ctx.stroke();
+
+                if (p.y > canvas.height) {
+                    particles[idx] = createParticle();
+                    particles[idx].y = -10;
+                }
+            });
+        }
+
+        function startConfetti() {
+            resizeCanvas();
+            canvas.style.display = "block";
+            particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push(createParticle());
+            }
+            clearInterval(confettiInterval);
+            confettiInterval = setInterval(drawConfetti, 20);
+        }
+
+        function stopConfetti() {
+            canvas.style.display = "none";
+            clearInterval(confettiInterval);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // --- 6. ĐĂNG NHẬP BẢO MẬT ---
+        const _0xacc = "\x61\x64\x6d\x69\x6e";
+        const _0xpass = "\x6c\x61\x6f\x32\x30\x32\x36";
+
+        function handleLogin() {
+            const userInp = document.getElementById('username').value;
+            const passInp = document.getElementById('password').value;
+            const errorMsg = document.getElementById('login-error');
+
+            if (userInp === _0xacc && passInp === _0xpass) {
+                document.getElementById('login-container').style.display = 'none';
+            } else {
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && document.getElementById('login-container').style.display !== 'none') {
+                handleLogin();
+            }
+        });
+    </script>
+</body>
+
+</html>
