@@ -603,11 +603,11 @@
         let currentAudio = null; // Biến dùng để kiểm soát và ngắt nhạc lập tức khi đóng bảng
 
         // Danh sách 5 Sound thắng ngẫu nhiên (không chứa meme)
-        const winSounds = [
-            "images/win1.mp3",
-            "images/win2.mp3",
-            "images/win3.mp3"
-        ];
+        // const winSounds = [
+        //     "images/win1.mp3",
+        //     "images/win2.mp3",
+        //     "images/win3.mp3"
+        // ];
 
         // Cặp đôi meme thua đồng bộ tuyệt đối (GIF nào đi kèm Sound đó)
         const memeCombo = [
@@ -620,16 +620,29 @@
         ];
 
         // Hàm phát nhạc thắng ngẫu nhiên
+        // function playWinSound() {
+        //     try {
+        //         if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        //         stopAnyPlayingAudio(); // Tắt âm thanh cũ nếu có trước khi phát bài mới
+
+        //         const randomWinUrl = winSounds[Math.floor(Math.random() * winSounds.length)];
+        //         currentAudio = new Audio(randomWinUrl);
+        //         currentAudio.volume = 0.6;
+        //         currentAudio.load();
+        //         currentAudio.play().catch(e => console.log("Chờ tương tác để phát nhạc: ", e));
+        //     } catch (e) { console.log(e); }
+        // }
+
         function playWinSound() {
             try {
                 if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-                stopAnyPlayingAudio(); // Tắt âm thanh cũ nếu có trước khi phát bài mới
+                stopAnyPlayingAudio(); // Tắt nhạc thua trước đó nếu có
 
-                const randomWinUrl = winSounds[Math.floor(Math.random() * winSounds.length)];
-                currentAudio = new Audio(randomWinUrl);
-                currentAudio.volume = 0.6;
-                currentAudio.load();
-                currentAudio.play().catch(e => console.log("Chờ tương tác để phát nhạc: ", e));
+                // Tạo chuỗi nốt nhạc chiến thắng (Ting.. Ting.. Ngân vang)
+                playTone(523.25, "sine", 0.15, 0);       // Nốt Đô
+                playTone(659.25, "sine", 0.15, 0.1);     // Nốt Mi
+                playTone(783.99, "sine", 0.15, 0.2);     // Nốt Sol
+                playTone(1046.50, "sine", 0.4, 0.3);     // Nốt Đô cao
             } catch (e) { console.log(e); }
         }
 
@@ -910,6 +923,7 @@
                 if (b !== element) b.style.opacity = '0.2';
             });
 
+            playWinSound(); 
             startConfetti();
         }
 
